@@ -15,7 +15,7 @@ class Bullet(Sprite):
         self.rect = pygame.Rect(0, 0, self.settings.bullet_width, self.settings.bullet_height)
         self.rect.midtop = ai_game.ship.rect.midtop
 
-        # Позиция снаряда храгится во float
+        # Позиция снаряда хранится во float
         self.y = float(self.rect.y)
 
     def update(self):
