@@ -7,6 +7,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from scoreboard import Scoreboard
 from button import Button
 
 
@@ -22,8 +23,11 @@ class AlienInvasion:
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption("Alien Invasion")
 
-        self.ship = Ship(self)
+        # Создание экземпляров для хранения статистики и панели результатов
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
+        self.ship = Ship(self)
+
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
 
@@ -41,7 +45,8 @@ class AlienInvasion:
                 self.ship.update()
                 self._update_bullets()
                 self._update_aliens()
-                self._update_screen()
+
+            self._update_screen()
 
     def _check_events(self):
         """Отслеживание событий клавиатуры и мыши"""
@@ -78,8 +83,9 @@ class AlienInvasion:
         """Запускает новую игру при нажатии кнопки Play"""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
-            # Сброс игрвой статистики
+            # Сброс игровых настроек и статистики
             self.stats.reset_stats()
+            self.settings.initialize_dynamic_settings()
             self.stats.game_active = True
 
             # Очистка списков пришельцев и снарядов
@@ -115,11 +121,17 @@ class AlienInvasion:
         """Обработка коллизии снарядов с пришельцами"""
         # Удаление снарядов и пришельцев учавствующих в коллизиях
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.sb.prep_score()
+            self.sb.check_high_score()
 
         if not self.aliens:
             # Уничтожение существующих снарядов и создаение нового флота
             self.bullets.empty()
             self._create_fleet()
+            self.settings.increase_speed()
 
     def _create_fleet(self):
         # Создание пришельца и вычисления количества пришельцев в ряду
@@ -210,6 +222,7 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+        self.sb.show_score()
 
         # Кнопка отображается только в случае если игра неактивна
         if not self.stats.game_active:
