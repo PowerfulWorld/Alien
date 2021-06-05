@@ -14,3 +14,7 @@ Right Arrow -> Move Right
 Left Arrow <- Move Left
 
 Space - Shoot
+
+# How to Run
+
+<code> $ python alien_invasion.py </code>
